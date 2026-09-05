@@ -2,6 +2,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
+from django.db.models import Q
 from rest_framework import serializers
 
 from .models import Department, Employee, Holiday, KioskDevice, ManagerScope, Shift, User, WorkSite
@@ -120,7 +121,7 @@ class EmployeeWriteSerializer(serializers.Serializer):
 
     def validate_email(self, value):
         normalized = value.strip().lower()
-        queryset = User.objects.filter(email__iexact=normalized)
+        queryset = User.objects.filter(Q(email__iexact=normalized) | Q(username__iexact=normalized))
         if self.instance:
             queryset = queryset.exclude(pk=self.instance.user_id)
         if queryset.exists():
@@ -162,6 +163,7 @@ class EmployeeWriteSerializer(serializers.Serializer):
             last_name=last_name,
             role=role,
             must_change_password=True,
+            is_active=validated_data.get("is_active", True),
         )
         return Employee.objects.create(user=user, **validated_data)
 
@@ -175,6 +177,8 @@ class EmployeeWriteSerializer(serializers.Serializer):
         }
         for key, value in user_fields.items():
             setattr(instance.user, key, value)
+        if "email" in user_fields:
+            instance.user.username = user_fields["email"]
         if password:
             instance.user.set_password(password)
             instance.user.must_change_password = True
@@ -240,7 +244,7 @@ class KioskDeviceSerializer(serializers.ModelSerializer):
         read_only_fields = ["paired_at", "last_seen_at", "created_at"]
 
     def get_is_paired(self, obj) -> bool:
-        return bool(obj.credential_hash)
+        return bool(obj.credential_hash and obj.pairing_id)
 
 
 class RefreshTokenSerializer(serializers.Serializer):

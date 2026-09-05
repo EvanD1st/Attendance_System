@@ -3,6 +3,7 @@
 from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
 from threading import Barrier
+from unittest.mock import patch
 
 from core.models import User
 from django.contrib import admin
@@ -50,8 +51,12 @@ class HardeningTests(APITestCase):
 
     def test_repairing_invalidates_previous_pairing_qr(self):
         old_token = self.qr()
-        self.kiosk.set_credential("replacement-credential")
+        old_pairing_id = self.kiosk.pairing_id
+        # Reproduce low-resolution clocks and re-pairs in the same instant.
+        with patch("core.models.timezone.now", return_value=self.kiosk.paired_at):
+            self.kiosk.set_credential("replacement-credential")
         self.kiosk.save()
+        self.assertNotEqual(self.kiosk.pairing_id, old_pairing_id)
         response = self.client.post(
             reverse("attendance-clock-in"), self.payload(qr_token=old_token), format="json"
         )

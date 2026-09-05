@@ -3,6 +3,7 @@ import 'core/api_client.dart';
 import 'shared/widgets.dart';
 import 'features/auth/screens.dart';
 import 'features/attendance/home.dart';
+
 class AttendanceApp extends StatefulWidget {
   final AttendanceGateway? gateway;
   const AttendanceApp({super.key, this.gateway});
@@ -26,6 +27,9 @@ class _AttendanceAppState extends State<AttendanceApp> {
     try {
       final restored = await gateway.restoreSession();
       if (mounted) setState(() => user = restored);
+    } catch (_) {
+      // A storage/network failure must not strand startup or escape unhandled.
+      if (mounted) setState(() => user = null);
     } finally {
       if (mounted) setState(() => loading = false);
     }
@@ -39,23 +43,47 @@ class _AttendanceAppState extends State<AttendanceApp> {
       theme: ThemeData(
         useMaterial3: true,
         scaffoldBackgroundColor: canvas,
-        colorScheme: ColorScheme.fromSeed(seedColor: blue, brightness: Brightness.light),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: blue,
+          brightness: Brightness.light,
+        ),
         fontFamily: 'Roboto',
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFDDE4EF))),
-          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFDDE4EF))),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Color(0xFFDDE4EF)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Color(0xFFDDE4EF)),
+          ),
         ),
       ),
       home: loading
           ? const SplashView()
           : user == null
-              ? LoginView(gateway: gateway, onAuthenticated: (value) => setState(() => user = value))
-              : user!['must_change_password'] == true
-                  ? ChangePasswordView(gateway: gateway, onChanged: () => setState(() => user = {...user!, 'must_change_password': false}))
-                  : HomeShell(gateway: gateway, user: user!, onLogout: () => setState(() => user = null)),
+          ? LoginView(
+              gateway: gateway,
+              onAuthenticated: (value) => setState(() => user = value),
+            )
+          : user!['must_change_password'] == true
+          ? ChangePasswordView(
+              gateway: gateway,
+              onChanged: () => setState(
+                () => user = {...user!, 'must_change_password': false},
+              ),
+            )
+          : HomeShell(
+              gateway: gateway,
+              user: user!,
+              onLogout: () => setState(() => user = null),
+            ),
     );
   }
 }

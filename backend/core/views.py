@@ -108,8 +108,10 @@ class RefreshView(APIView):
         ),
     )
     def post(self, request):
+        serializer = RefreshTokenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         try:
-            refresh = RefreshToken(request.data.get("refresh", ""))
+            refresh = RefreshToken(serializer.validated_data["refresh"])
             user = User.objects.get(pk=refresh["user_id"], is_active=True)
             refresh.blacklist()
             rotated = RefreshToken.for_user(user)
@@ -124,8 +126,13 @@ class RefreshView(APIView):
 class LogoutView(APIView):
     @extend_schema(request=RefreshTokenSerializer, responses={204: None})
     def post(self, request):
+        serializer = RefreshTokenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         try:
-            RefreshToken(request.data.get("refresh", "")).blacklist()
+            refresh = RefreshToken(serializer.validated_data["refresh"])
+            if str(refresh["user_id"]) != str(request.user.pk):
+                return Response({"detail": "Refresh token belongs to another account."}, status=400)
+            refresh.blacklist()
         except TokenError:
             pass
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -288,12 +295,14 @@ class KioskDeviceViewSet(viewsets.ModelViewSet):
         kiosk.pairing_code_hash = ""
         kiosk.pairing_expires_at = None
         kiosk.paired_at = None
+        kiosk.pairing_id = None
         kiosk.save(
             update_fields=[
                 "credential_hash",
                 "pairing_code_hash",
                 "pairing_expires_at",
                 "paired_at",
+                "pairing_id",
             ]
         )
         return Response({"detail": "Kiosk credential revoked."})
@@ -339,6 +348,7 @@ class KioskPairView(APIView):
                 update_fields=[
                     "credential_hash",
                     "paired_at",
+                    "pairing_id",
                     "pairing_code_hash",
                     "pairing_expires_at",
                 ]

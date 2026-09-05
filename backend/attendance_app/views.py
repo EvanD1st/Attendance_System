@@ -1,13 +1,14 @@
 import csv
 from datetime import timedelta
 
-from core.models import Employee, KioskDevice, User
+from core.models import Employee, KioskDevice
 from core.permissions import IsAdministrator, IsAdminWriteManagerRead, PasswordChanged
 from django.conf import settings
-from django.db.models import Count, Q
+from django.db.models import Count
 from django.http import HttpResponse
 from django.utils import timezone
-from drf_spectacular.utils import extend_schema, inline_serializer
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema, inline_serializer
 from rest_framework import mixins, permissions, status, viewsets
 from rest_framework import serializers as drf_serializers
 from rest_framework.decorators import action
@@ -17,48 +18,26 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 
 from .models import AdminException, AttendanceAttempt, AttendanceCorrection, AttendanceRecord
+from .selectors import RecordFilters, apply_record_filters, scoped_records
 from .serializers import (
     AdminExceptionSerializer,
     AttendanceAttemptSerializer,
     AttendanceCorrectionSerializer,
     AttendanceCorrectionWriteSerializer,
     AttendanceRecordSerializer,
+    AttendanceSummarySerializer,
     PunchSerializer,
+    TodaySerializer,
 )
 from .services import PunchError, holiday_for, process_punch, resolve_clock_in_date
 
 
-def scoped_records(queryset, user):
-    if user.is_superuser or user.role == User.Role.ADMIN:
-        return queryset
-    if user.role != User.Role.MANAGER:
-        employee = getattr(user, "employee_profile", None)
-        return queryset.filter(employee=employee) if employee else queryset.none()
-    allowed = Q(pk__in=[])
-    for scope in user.manager_scopes.all():
-        item = Q(site=scope.site)
-        if scope.department_id:
-            item &= Q(employee__department=scope.department)
-        allowed |= item
-    return queryset.filter(allowed).distinct()
-
-
-def apply_record_filters(queryset, params):
-    if params.get("from"):
-        queryset = queryset.filter(work_date__gte=params["from"])
-    if params.get("to"):
-        queryset = queryset.filter(work_date__lte=params["to"])
-    if params.get("site"):
-        queryset = queryset.filter(site_id=params["site"])
-    if params.get("department"):
-        queryset = queryset.filter(employee__department_id=params["department"])
-    if params.get("employee"):
-        queryset = queryset.filter(employee_id=params["employee"])
-    if params.get("state"):
-        queryset = queryset.filter(state=params["state"].upper())
-    if params.get("missing_clock_out") in {"true", "false"}:
-        queryset = queryset.filter(missing_clock_out=params["missing_clock_out"] == "true")
-    return queryset
+def csv_cell(value):
+    if isinstance(value, str) and (
+        value.startswith(("\t", "\r", "\n")) or value.lstrip().startswith(("=", "+", "-", "@"))
+    ):
+        return "'" + value
+    return value
 
 
 class EmployeeAttendanceViewSet(viewsets.GenericViewSet):
@@ -74,6 +53,7 @@ class EmployeeAttendanceViewSet(viewsets.GenericViewSet):
             pk=employee.pk
         )
 
+    @extend_schema(responses=TodaySerializer)
     @action(detail=False, methods=["get"])
     def today(self, request):
         try:
@@ -154,6 +134,10 @@ class EmployeeAttendanceViewSet(viewsets.GenericViewSet):
             else status.HTTP_201_CREATED,
         )
 
+    @extend_schema(
+        request=PunchSerializer,
+        responses={200: AttendanceRecordSerializer, 201: AttendanceRecordSerializer},
+    )
     @action(
         detail=False,
         methods=["post"],
@@ -165,6 +149,7 @@ class EmployeeAttendanceViewSet(viewsets.GenericViewSet):
     def clock_in(self, request):
         return self._punch(request, AttendanceAttempt.Action.CLOCK_IN)
 
+    @extend_schema(request=PunchSerializer, responses={200: AttendanceRecordSerializer})
     @action(
         detail=False,
         methods=["post"],
@@ -192,6 +177,7 @@ class AttendanceManagementViewSet(
             scoped_records(queryset, self.request.user), self.request.query_params
         )
 
+    @extend_schema(parameters=[RecordFilters], responses=AttendanceSummarySerializer)
     @action(detail=False, methods=["get"])
     def summary(self, request):
         queryset = self.get_queryset()
@@ -222,6 +208,7 @@ class AttendanceManagementViewSet(
             }
         )
 
+    @extend_schema(parameters=[RecordFilters], responses={(200, "text/csv"): OpenApiTypes.STR})
     @action(detail=False, methods=["get"], url_path="export.csv")
     def export_csv(self, request):
         response = HttpResponse(content_type="text/csv")
@@ -243,7 +230,8 @@ class AttendanceManagementViewSet(
         )
         for record in self.get_queryset().iterator():
             writer.writerow(
-                [
+                csv_cell(value)
+                for value in [
                     record.work_date,
                     record.employee.employee_number,
                     record.employee.full_name,
@@ -323,6 +311,9 @@ class KioskQRView(APIView):
     throttle_scope = "kiosk"
 
     @extend_schema(
+        parameters=[
+            OpenApiParameter("X-Kiosk-Credential", str, OpenApiParameter.HEADER, required=True)
+        ],
         responses=inline_serializer(
             name="KioskQRResponse",
             fields={
@@ -352,7 +343,7 @@ class KioskQRView(APIView):
         token["kind"] = "attendance_qr"
         token["kiosk_id"] = str(kiosk.pk)
         token["site_id"] = kiosk.site_id
-        token["pairing_id"] = kiosk.paired_at.isoformat()
+        token["pairing_id"] = str(kiosk.pairing_id)
         kiosk.last_seen_at = timezone.now()
         kiosk.save(update_fields=["last_seen_at"])
         return Response(

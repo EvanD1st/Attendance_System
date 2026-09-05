@@ -48,6 +48,26 @@ class AttendanceRecordSerializer(serializers.ModelSerializer):
         return round(obj.worked_minutes / 60, 2) if obj.worked_minutes is not None else None
 
 
+class TodaySerializer(serializers.Serializer):
+    work_date = serializers.DateField()
+    day_state = serializers.CharField()
+    holiday_name = serializers.CharField(allow_null=True)
+    assignment = serializers.DictField()
+    attendance = AttendanceRecordSerializer(allow_null=True)
+    is_checked_in = serializers.BooleanField()
+    is_checked_out = serializers.BooleanField()
+
+
+class AttendanceSummarySerializer(serializers.Serializer):
+    present = serializers.IntegerField()
+    late = serializers.IntegerField()
+    absent = serializers.IntegerField()
+    excused = serializers.IntegerField()
+    attendance_rate = serializers.FloatField()
+    missing_clock_out = serializers.IntegerField()
+    rejected_attempts = serializers.IntegerField()
+
+
 class PunchSerializer(serializers.Serializer):
     request_id = serializers.UUIDField()
     qr_token = serializers.CharField(trim_whitespace=True)

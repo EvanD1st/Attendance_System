@@ -43,6 +43,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const refresh = localStorage.getItem('attendance_refresh');
         try {
           if (refresh) await api.post('/auth/logout/', { refresh });
+        } catch {
+          // Local sign-out must still complete when the API is unavailable.
         } finally {
           clearTokens();
           setUser(null);

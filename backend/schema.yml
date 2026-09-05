@@ -13,17 +13,24 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AttendanceRecord'
+              $ref: '#/components/schemas/Punch'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/AttendanceRecord'
+              $ref: '#/components/schemas/Punch'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/AttendanceRecord'
+              $ref: '#/components/schemas/Punch'
+        required: true
       security:
       - jwtAuth: []
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceRecord'
+          description: ''
+        '201':
           content:
             application/json:
               schema:
@@ -38,13 +45,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AttendanceRecord'
+              $ref: '#/components/schemas/Punch'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/AttendanceRecord'
+              $ref: '#/components/schemas/Punch'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/AttendanceRecord'
+              $ref: '#/components/schemas/Punch'
+        required: true
       security:
       - jwtAuth: []
       responses:
@@ -80,7 +88,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AttendanceRecord'
+                $ref: '#/components/schemas/Today'
           description: ''
   /api/v1/auth/change-password/:
     post:
@@ -126,7 +134,6 @@ paths:
               $ref: '#/components/schemas/Login'
         required: true
       security:
-      - jwtAuth: []
       - {}
       responses:
         '200':
@@ -189,7 +196,6 @@ paths:
               $ref: '#/components/schemas/RefreshToken'
         required: true
       security:
-      - jwtAuth: []
       - {}
       responses:
         '200':
@@ -214,6 +220,11 @@ paths:
     get:
       operationId: api_v1_kiosk_devices_qr_retrieve
       parameters:
+      - in: header
+        name: X-Kiosk-Credential
+        schema:
+          type: string
+        required: true
       - in: path
         name: device_id
         schema:
@@ -340,6 +351,51 @@ paths:
   /api/v1/management/attendance/export.csv/:
     get:
       operationId: api_v1_management_attendance_export.csv_retrieve
+      parameters:
+      - in: query
+        name: department
+        schema:
+          type: integer
+          minimum: 1
+      - in: query
+        name: employee
+        schema:
+          type: integer
+          minimum: 1
+      - in: query
+        name: from
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: missing_clock_out
+        schema:
+          type: boolean
+      - in: query
+        name: site
+        schema:
+          type: integer
+          minimum: 1
+      - in: query
+        name: state
+        schema:
+          enum:
+          - PRESENT
+          - LATE
+          - ABSENT
+          - EXCUSED
+          type: string
+          minLength: 1
+        description: |-
+          * `PRESENT` - PRESENT
+          * `LATE` - LATE
+          * `ABSENT` - ABSENT
+          * `EXCUSED` - EXCUSED
+      - in: query
+        name: to
+        schema:
+          type: string
+          format: date
       tags:
       - api
       security:
@@ -347,13 +403,58 @@ paths:
       responses:
         '200':
           content:
-            application/json:
+            text/csv:
               schema:
-                $ref: '#/components/schemas/AttendanceRecord'
+                type: string
           description: ''
   /api/v1/management/attendance/summary/:
     get:
       operationId: api_v1_management_attendance_summary_retrieve
+      parameters:
+      - in: query
+        name: department
+        schema:
+          type: integer
+          minimum: 1
+      - in: query
+        name: employee
+        schema:
+          type: integer
+          minimum: 1
+      - in: query
+        name: from
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: missing_clock_out
+        schema:
+          type: boolean
+      - in: query
+        name: site
+        schema:
+          type: integer
+          minimum: 1
+      - in: query
+        name: state
+        schema:
+          enum:
+          - PRESENT
+          - LATE
+          - ABSENT
+          - EXCUSED
+          type: string
+          minLength: 1
+        description: |-
+          * `PRESENT` - PRESENT
+          * `LATE` - LATE
+          * `ABSENT` - ABSENT
+          * `EXCUSED` - EXCUSED
+      - in: query
+        name: to
+        schema:
+          type: string
+          format: date
       tags:
       - api
       security:
@@ -363,7 +464,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AttendanceRecord'
+                $ref: '#/components/schemas/AttendanceSummary'
           description: ''
   /api/v1/management/corrections/:
     get:
@@ -1571,6 +1672,32 @@ components:
       - work_date
       - worked_hours
       - worked_minutes
+    AttendanceSummary:
+      type: object
+      properties:
+        present:
+          type: integer
+        late:
+          type: integer
+        absent:
+          type: integer
+        excused:
+          type: integer
+        attendance_rate:
+          type: number
+          format: double
+        missing_clock_out:
+          type: integer
+        rejected_attempts:
+          type: integer
+      required:
+      - absent
+      - attendance_rate
+      - excused
+      - late
+      - missing_clock_out
+      - present
+      - rejected_attempts
     ChangePassword:
       type: object
       properties:
@@ -1601,6 +1728,8 @@ components:
         id:
           type: integer
           readOnly: true
+        user:
+          type: integer
         employee_number:
           type: string
           maxLength: 40
@@ -1655,6 +1784,7 @@ components:
       - shift
       - shift_name
       - site_name
+      - user
       - work_site
     EmployeeWrite:
       type: object
@@ -2311,6 +2441,36 @@ components:
           maxLength: 64
         is_active:
           type: boolean
+    Punch:
+      type: object
+      properties:
+        request_id:
+          type: string
+          format: uuid
+        qr_token:
+          type: string
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        accuracy_meters:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+        captured_at:
+          type: string
+          format: date-time
+      required:
+      - accuracy_meters
+      - captured_at
+      - latitude
+      - longitude
+      - qr_token
+      - request_id
     RefreshResponse:
       type: object
       properties:
@@ -2368,6 +2528,36 @@ components:
         * `LATE` - Late
         * `ABSENT` - Absent
         * `EXCUSED` - Excused
+    Today:
+      type: object
+      properties:
+        work_date:
+          type: string
+          format: date
+        day_state:
+          type: string
+        holiday_name:
+          type: string
+          nullable: true
+        assignment:
+          type: object
+          additionalProperties: {}
+        attendance:
+          allOf:
+          - $ref: '#/components/schemas/AttendanceRecord'
+          nullable: true
+        is_checked_in:
+          type: boolean
+        is_checked_out:
+          type: boolean
+      required:
+      - assignment
+      - attendance
+      - day_state
+      - holiday_name
+      - is_checked_in
+      - is_checked_out
+      - work_date
     UserSummary:
       type: object
       properties:

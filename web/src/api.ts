@@ -4,6 +4,7 @@ const configured = import.meta.env.VITE_API_URL || '/api/v1';
 export const API_BASE_URL = configured.replace(/\/$/, '');
 export const api = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 15000,
   headers: { 'Content-Type': 'application/json' },
 });
 // Kiosks authenticate independently; never refresh or attach a portal session.
@@ -35,14 +36,16 @@ api.interceptors.response.use(
       !request ||
       request._retry ||
       !refresh ||
-      request.url?.includes('/auth/refresh/')
+      request.url?.includes('/auth/refresh/') ||
+      request.url?.includes('/auth/login/') ||
+      request.url?.includes('/auth/logout/')
     ) {
       throw error;
     }
     request._retry = true;
     try {
       refreshPromise ??= axios
-        .post(`${API_BASE_URL}/auth/refresh/`, { refresh })
+        .post(`${API_BASE_URL}/auth/refresh/`, { refresh }, { timeout: 15000 })
         .then(({ data }) => {
           localStorage.setItem('attendance_access', data.access);
           localStorage.setItem('attendance_refresh', data.refresh);

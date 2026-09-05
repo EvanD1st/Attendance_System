@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { ArrowLeft, Clock3, LoaderCircle, Smartphone, Unplug } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { isAxiosError } from 'axios';
@@ -10,44 +10,74 @@ export function KioskPage() {
   const [pairingCode, setPairingCode] = useState('');
   const [token, setToken] = useState('');
   const [site, setSite] = useState('');
-  const [expires, setExpires] = useState(0);
+  const [expiresAt, setExpiresAt] = useState(0);
+  const [lifetime, setLifetime] = useState(60);
+  const [now, setNow] = useState(Date.now);
+  const [pairing, setPairing] = useState(false);
+  const expires = Math.max(0, Math.ceil((expiresAt - now) / 1000));
   const [error, setError] = useState('');
   const paired = Boolean(deviceId && credential);
-  const loadQr = useCallback(async () => {
-    if (!deviceId || !credential) return;
-    try {
-      const { data } = await api.get(`/kiosk/devices/${deviceId}/qr/`, {
-        headers: { 'X-Kiosk-Credential': credential },
-      });
-      setToken(data.qr_token);
-      setSite(data.site.name);
-      setExpires(data.expires_in_seconds);
-      setError('');
-    } catch (cause) {
-      if (isAxiosError(cause) && cause.response?.status === 401) {
-        localStorage.removeItem('kiosk_credential');
-        setCredential('');
-        setToken('');
-        setError('This kiosk was revoked or its credential is invalid. Enter a new pairing code.');
-        return;
-      }
-      setError(errorMessage(cause));
-      setToken('');
-    }
-  }, [credential, deviceId]);
   useEffect(() => {
     if (!paired) return;
+    let active = true;
+    let refresh: number | undefined;
+    const controller = new AbortController();
+    async function loadQr() {
+      const requestedAt = Date.now();
+      let nextRefresh = 5000;
+      let revoked = false;
+      try {
+        const { data } = await api.get(`/kiosk/devices/${deviceId}/qr/`, {
+          headers: { 'X-Kiosk-Credential': credential },
+          signal: controller.signal,
+        });
+        if (!active) return;
+        const seconds = Math.max(1, Number(data.expires_in_seconds));
+        setToken(data.qr_token);
+        setSite(data.site.name);
+        setLifetime(seconds);
+        setExpiresAt(requestedAt + seconds * 1000);
+        setNow(Date.now());
+        setError('');
+        nextRefresh = Math.min(seconds * 750, 45000);
+      } catch (cause) {
+        if (!active) return;
+        setToken('');
+        if (isAxiosError(cause) && cause.response?.status === 401) {
+          revoked = true;
+          localStorage.removeItem('kiosk_credential');
+          setCredential('');
+          setError(
+            'This kiosk was revoked or its credential is invalid. Enter a new pairing code.',
+          );
+        } else {
+          setError(errorMessage(cause));
+        }
+      } finally {
+        if (active && !revoked) refresh = window.setTimeout(() => void loadQr(), nextRefresh);
+      }
+    }
     void loadQr();
-    const refresh = window.setInterval(() => void loadQr(), 45000);
-    return () => window.clearInterval(refresh);
-  }, [loadQr, paired]);
+    return () => {
+      active = false;
+      controller.abort();
+      window.clearTimeout(refresh);
+    };
+  }, [credential, deviceId, paired]);
   useEffect(() => {
-    if (!expires) return;
-    const timer = window.setInterval(() => setExpires((value) => Math.max(0, value - 1)), 1000);
-    return () => window.clearInterval(timer);
-  }, [expires > 0]);
+    if (!paired) return;
+    const tick = () => setNow(Date.now());
+    const timer = window.setInterval(tick, 1000);
+    window.addEventListener('focus', tick);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener('focus', tick);
+    };
+  }, [paired]);
   async function pair(event: FormEvent) {
     event.preventDefault();
+    if (pairing) return;
+    setPairing(true);
     setError('');
     try {
       const { data } = await api.post('/kiosk/pair/', {
@@ -61,12 +91,16 @@ export function KioskPage() {
       setSite(data.site.name);
     } catch (cause) {
       setError(errorMessage(cause));
+    } finally {
+      setPairing(false);
     }
   }
   function reset() {
     localStorage.removeItem('kiosk_device_id');
     localStorage.removeItem('kiosk_credential');
     setCredential('');
+    setPairingCode('');
+    setExpiresAt(0);
     setToken('');
   }
   if (!paired)
@@ -98,7 +132,9 @@ export function KioskPage() {
               required
             />
           </label>
-          <button className="primary">Pair kiosk</button>
+          <button className="primary" disabled={pairing}>
+            {pairing ? 'Pairing…' : 'Pair kiosk'}
+          </button>
         </form>
       </main>
     );
@@ -117,7 +153,7 @@ export function KioskPage() {
         <h1>Scan to record attendance</h1>
         <p>Open Attendance Control on your phone and scan this secure code.</p>
         <div className="qr-frame">
-          {token ? (
+          {token && expires > 0 ? (
             <QRCodeSVG value={token} size={280} level="H" />
           ) : (
             <LoaderCircle className="spin" size={50} />
@@ -127,7 +163,7 @@ export function KioskPage() {
           <div className="alert error">{error}</div>
         ) : (
           <div className="expiry">
-            <span style={{ width: `${(expires / 60) * 100}%` }} />
+            <span style={{ width: `${(expires / lifetime) * 100}%` }} />
             <strong>{expires}s</strong>
           </div>
         )}

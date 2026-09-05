@@ -78,7 +78,7 @@ class AttendanceTestCase(APITestCase):
         token["kind"] = "attendance_qr"
         token["kiosk_id"] = str(kiosk.pk)
         token["site_id"] = kiosk.site_id
-        token["pairing_id"] = kiosk.paired_at.isoformat()
+        token["pairing_id"] = str(kiosk.pairing_id)
         if expired:
             token.set_exp(
                 from_time=timezone.now() - timedelta(minutes=2), lifetime=timedelta(seconds=1)

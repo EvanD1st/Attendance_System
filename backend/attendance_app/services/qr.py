@@ -26,7 +26,8 @@ def parse_qr(qr_token):
     if (
         not kiosk.credential_hash
         or not kiosk.paired_at
-        or token.get("pairing_id") != kiosk.paired_at.isoformat()
+        or not kiosk.pairing_id
+        or token.get("pairing_id") != str(kiosk.pairing_id)
     ):
         raise PunchError(
             "revoked_qr",

@@ -148,6 +148,7 @@ class KioskDevice(models.Model):
     pairing_code_hash = models.CharField(max_length=256, blank=True)
     pairing_expires_at = models.DateTimeField(null=True, blank=True)
     paired_at = models.DateTimeField(null=True, blank=True)
+    pairing_id = models.UUIDField(null=True, blank=True, editable=False)
     last_seen_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -173,6 +174,7 @@ class KioskDevice(models.Model):
     def set_credential(self, credential: str):
         self.credential_hash = make_password(credential)
         self.paired_at = timezone.now()
+        self.pairing_id = uuid.uuid4()
         self.pairing_code_hash = ""
         self.pairing_expires_at = None
 
@@ -180,6 +182,7 @@ class KioskDevice(models.Model):
         return bool(
             self.is_active
             and self.credential_hash
+            and self.pairing_id
             and check_password(credential, self.credential_hash)
         )
 

@@ -12,7 +12,7 @@ All timestamps are stored in UTC. Shift interpretation and work dates use the em
 
 ## Quick start
 
-Prerequisites: Python 3.11+, Node.js 20+, and Flutter stable with an Android SDK.
+Prerequisites: Python 3.11+, Node.js 22.12+, and Flutter 3.44.8 with an Android SDK.
 
 ### 1. Backend
 
@@ -21,7 +21,7 @@ From the repository root in PowerShell:
 ```powershell
 py -3.11 -m venv .venv
 .\.venv\Scripts\Activate.ps1
-pip install -r backend\requirements.txt
+pip install -r backend\requirements-dev.txt -c backend\constraints.txt
 Copy-Item backend\.env.example backend\.env
 python backend\manage.py migrate
 python backend\manage.py seed_demo
@@ -42,7 +42,7 @@ In a second terminal:
 
 ```powershell
 Set-Location web
-npm install
+npm ci
 npm run dev
 ```
 
@@ -78,6 +78,12 @@ The backend must be reachable from the device; update `ALLOWED_HOSTS` as needed 
 | Night employee | `night@attendance.local` | `DemoNight!2026` |
 
 Employee accounts are forced to replace their temporary password before using attendance actions. The demo kiosk is named **HQ Entrance** and receives pairing code `123456`; its device UUID is printed by the seed command.
+
+Seeding preserves existing passwords unless `--reset-passwords` is supplied and is disabled with `DEBUG=False`. Use these public credentials only in an isolated local demo.
+
+## Updating an existing checkout
+
+Run `python backend/manage.py migrate` after updating. Migration `core.0004` adds random kiosk pairing identifiers; displays paired before this migration must be paired again. Administrators can issue a fresh code from Configuration → Kiosks. Existing attendance and audit records are preserved.
 
 ## Attendance rules
 
@@ -138,6 +144,8 @@ flutter test
 ```
 
 The backend test suite covers role and scope boundaries, forced password change, pairing and revocation, QR validation, geofence edges, GPS freshness/accuracy, cross-site rejection, idempotency conflicts, grace thresholds, overnight shifts, holidays, exceptions, absence finalization, correction snapshots, and filtered CSV output. Web and Flutter suites exercise their key permission and authentication flows with isolated clients.
+
+Run the CI-equivalent checks from the repository root with `python scripts/check.py backend`, `python scripts/check.py web`, or `python scripts/check.py mobile`. Activate the virtual environment first. Backend checks include lint, formatting, migration drift, tests, and OpenAPI validation. CI also tests PostgreSQL and builds an Android debug APK; local SQLite tests do not substitute for PostgreSQL or physical-device camera/GPS acceptance.
 
 ## Production boundary
 
