@@ -1,7 +1,6 @@
 # Attendance Control
 
-A standalone attendance repository with a Django REST backend, React administration and kiosk portal, and an Android-first Flutter employee app. It shares no database, authentication, code imports, or synchronization with NuruX.
-
+A standalone attendance repository with a Django REST backend, React administration and kiosk portal, and an Android-first Flutter employee app.
 ## Repository layout
 
 - `backend/` — Django 5.2 LTS, Django REST Framework, SimpleJWT, OpenAPI, SQLite by default, PostgreSQL-ready.
