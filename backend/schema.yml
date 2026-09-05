@@ -1,0 +1,2442 @@
+openapi: 3.0.3
+info:
+  title: Attendance System API
+  version: 1.0.0
+  description: Standalone attendance, work-site, kiosk, and reporting API.
+paths:
+  /api/v1/attendance/clock-in/:
+    post:
+      operationId: api_v1_attendance_clock_in_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttendanceRecord'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AttendanceRecord'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AttendanceRecord'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceRecord'
+          description: ''
+  /api/v1/attendance/clock-out/:
+    post:
+      operationId: api_v1_attendance_clock_out_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttendanceRecord'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AttendanceRecord'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AttendanceRecord'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceRecord'
+          description: ''
+  /api/v1/attendance/history/:
+    get:
+      operationId: api_v1_attendance_history_retrieve
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceRecord'
+          description: ''
+  /api/v1/attendance/today/:
+    get:
+      operationId: api_v1_attendance_today_retrieve
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceRecord'
+          description: ''
+  /api/v1/auth/change-password/:
+    post:
+      operationId: api_v1_auth_change_password_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePassword'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChangePassword'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChangePassword'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordChangedResponse'
+          description: ''
+  /api/v1/auth/login/:
+    post:
+      operationId: api_v1_auth_login_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Login'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Login'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+          description: ''
+  /api/v1/auth/logout/:
+    post:
+      operationId: api_v1_auth_logout_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshToken'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RefreshToken'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RefreshToken'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/auth/me/:
+    get:
+      operationId: api_v1_auth_me_retrieve
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSummary'
+          description: ''
+  /api/v1/auth/refresh/:
+    post:
+      operationId: api_v1_auth_refresh_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshToken'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RefreshToken'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RefreshToken'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshResponse'
+          description: ''
+  /api/v1/health/:
+    get:
+      operationId: api_v1_health_retrieve
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+          description: ''
+  /api/v1/kiosk/devices/{device_id}/qr/:
+    get:
+      operationId: api_v1_kiosk_devices_qr_retrieve
+      parameters:
+      - in: path
+        name: device_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KioskQRResponse'
+          description: ''
+  /api/v1/kiosk/pair/:
+    post:
+      operationId: api_v1_kiosk_pair_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KioskPair'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/KioskPair'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/KioskPair'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KioskPairResponse'
+          description: ''
+  /api/v1/management/attempts/:
+    get:
+      operationId: api_v1_management_attempts_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAttendanceAttemptList'
+          description: ''
+  /api/v1/management/attempts/{id}/:
+    get:
+      operationId: api_v1_management_attempts_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this attendance attempt.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceAttempt'
+          description: ''
+  /api/v1/management/attendance/:
+    get:
+      operationId: api_v1_management_attendance_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAttendanceRecordList'
+          description: ''
+  /api/v1/management/attendance/{id}/:
+    get:
+      operationId: api_v1_management_attendance_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this attendance record.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceRecord'
+          description: ''
+  /api/v1/management/attendance/export.csv/:
+    get:
+      operationId: api_v1_management_attendance_export.csv_retrieve
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceRecord'
+          description: ''
+  /api/v1/management/attendance/summary/:
+    get:
+      operationId: api_v1_management_attendance_summary_retrieve
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceRecord'
+          description: ''
+  /api/v1/management/corrections/:
+    get:
+      operationId: api_v1_management_corrections_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAttendanceCorrectionList'
+          description: ''
+    post:
+      operationId: api_v1_management_corrections_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttendanceCorrectionWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AttendanceCorrectionWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AttendanceCorrectionWrite'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceCorrectionWrite'
+          description: ''
+  /api/v1/management/corrections/{id}/:
+    get:
+      operationId: api_v1_management_corrections_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this attendance correction.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceCorrection'
+          description: ''
+  /api/v1/management/departments/:
+    get:
+      operationId: api_v1_management_departments_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDepartmentList'
+          description: ''
+    post:
+      operationId: api_v1_management_departments_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Department'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Department'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Department'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+          description: ''
+  /api/v1/management/departments/{id}/:
+    get:
+      operationId: api_v1_management_departments_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this department.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+          description: ''
+    patch:
+      operationId: api_v1_management_departments_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this department.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDepartment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDepartment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDepartment'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+          description: ''
+  /api/v1/management/employees/:
+    get:
+      operationId: api_v1_management_employees_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEmployeeList'
+          description: ''
+    post:
+      operationId: api_v1_management_employees_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmployeeWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EmployeeWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EmployeeWrite'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmployeeWrite'
+          description: ''
+  /api/v1/management/employees/{id}/:
+    get:
+      operationId: api_v1_management_employees_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this employee.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+          description: ''
+    patch:
+      operationId: api_v1_management_employees_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this employee.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedEmployeeWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedEmployeeWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedEmployeeWrite'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmployeeWrite'
+          description: ''
+  /api/v1/management/exceptions/:
+    get:
+      operationId: api_v1_management_exceptions_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAdminExceptionList'
+          description: ''
+    post:
+      operationId: api_v1_management_exceptions_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminException'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminException'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminException'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminException'
+          description: ''
+  /api/v1/management/exceptions/{id}/:
+    get:
+      operationId: api_v1_management_exceptions_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this admin exception.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminException'
+          description: ''
+  /api/v1/management/holidays/:
+    get:
+      operationId: api_v1_management_holidays_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedHolidayList'
+          description: ''
+    post:
+      operationId: api_v1_management_holidays_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Holiday'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Holiday'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Holiday'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Holiday'
+          description: ''
+  /api/v1/management/holidays/{id}/:
+    get:
+      operationId: api_v1_management_holidays_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this holiday.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Holiday'
+          description: ''
+    patch:
+      operationId: api_v1_management_holidays_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this holiday.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedHoliday'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedHoliday'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedHoliday'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Holiday'
+          description: ''
+  /api/v1/management/kiosks/:
+    get:
+      operationId: api_v1_management_kiosks_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedKioskDeviceList'
+          description: ''
+    post:
+      operationId: api_v1_management_kiosks_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KioskDevice'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/KioskDevice'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/KioskDevice'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KioskDevice'
+          description: ''
+  /api/v1/management/kiosks/{id}/:
+    get:
+      operationId: api_v1_management_kiosks_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this kiosk device.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KioskDevice'
+          description: ''
+    patch:
+      operationId: api_v1_management_kiosks_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this kiosk device.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedKioskDevice'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedKioskDevice'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedKioskDevice'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KioskDevice'
+          description: ''
+  /api/v1/management/kiosks/{id}/pairing-code/:
+    post:
+      operationId: api_v1_management_kiosks_pairing_code_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this kiosk device.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KioskDevice'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/KioskDevice'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/KioskDevice'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KioskDevice'
+          description: ''
+  /api/v1/management/kiosks/{id}/revoke/:
+    post:
+      operationId: api_v1_management_kiosks_revoke_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this kiosk device.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KioskDevice'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/KioskDevice'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/KioskDevice'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KioskDevice'
+          description: ''
+  /api/v1/management/manager-scopes/:
+    get:
+      operationId: api_v1_management_manager_scopes_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedManagerScopeList'
+          description: ''
+    post:
+      operationId: api_v1_management_manager_scopes_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ManagerScope'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ManagerScope'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ManagerScope'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManagerScope'
+          description: ''
+  /api/v1/management/manager-scopes/{id}/:
+    get:
+      operationId: api_v1_management_manager_scopes_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this manager scope.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManagerScope'
+          description: ''
+    patch:
+      operationId: api_v1_management_manager_scopes_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this manager scope.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedManagerScope'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedManagerScope'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedManagerScope'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManagerScope'
+          description: ''
+  /api/v1/management/shifts/:
+    get:
+      operationId: api_v1_management_shifts_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedShiftList'
+          description: ''
+    post:
+      operationId: api_v1_management_shifts_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Shift'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Shift'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Shift'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shift'
+          description: ''
+  /api/v1/management/shifts/{id}/:
+    get:
+      operationId: api_v1_management_shifts_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this shift.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shift'
+          description: ''
+    patch:
+      operationId: api_v1_management_shifts_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this shift.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedShift'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedShift'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedShift'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shift'
+          description: ''
+  /api/v1/management/sites/:
+    get:
+      operationId: api_v1_management_sites_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedWorkSiteList'
+          description: ''
+    post:
+      operationId: api_v1_management_sites_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkSite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WorkSite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WorkSite'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkSite'
+          description: ''
+  /api/v1/management/sites/{id}/:
+    get:
+      operationId: api_v1_management_sites_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this work site.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkSite'
+          description: ''
+    patch:
+      operationId: api_v1_management_sites_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this work site.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedWorkSite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedWorkSite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedWorkSite'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkSite'
+          description: ''
+components:
+  schemas:
+    ActionEnum:
+      enum:
+      - CLOCK_IN
+      - CLOCK_OUT
+      type: string
+      description: |-
+        * `CLOCK_IN` - Clock in
+        * `CLOCK_OUT` - Clock out
+    AdminException:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        employee:
+          type: integer
+        employee_number:
+          type: string
+          readOnly: true
+        employee_name:
+          type: string
+          readOnly: true
+        date:
+          type: string
+          format: date
+        reason:
+          type: string
+        approved_by:
+          type: integer
+          readOnly: true
+        approved_by_email:
+          type: string
+          format: email
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - approved_by
+      - approved_by_email
+      - created_at
+      - date
+      - employee
+      - employee_name
+      - employee_number
+      - id
+      - reason
+    AttendanceAttempt:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        employee_number:
+          type: string
+          readOnly: true
+        employee_name:
+          type: string
+          readOnly: true
+        site_name:
+          type: string
+          readOnly: true
+        kiosk_name:
+          type: string
+          readOnly: true
+        request_id:
+          type: string
+          format: uuid
+          readOnly: true
+        action:
+          allOf:
+          - $ref: '#/components/schemas/ActionEnum'
+          readOnly: true
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          readOnly: true
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          readOnly: true
+        accuracy_meters:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+          readOnly: true
+        captured_at:
+          type: string
+          format: date-time
+          readOnly: true
+        received_at:
+          type: string
+          format: date-time
+          readOnly: true
+        distance_meters:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+          nullable: true
+        accepted:
+          type: boolean
+          readOnly: true
+        reason_code:
+          type: string
+          readOnly: true
+        reason_detail:
+          type: string
+          readOnly: true
+        employee:
+          type: integer
+          readOnly: true
+        site:
+          type: integer
+          readOnly: true
+          nullable: true
+        kiosk:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        record:
+          type: integer
+          readOnly: true
+          nullable: true
+      required:
+      - accepted
+      - accuracy_meters
+      - action
+      - captured_at
+      - distance_meters
+      - employee
+      - employee_name
+      - employee_number
+      - id
+      - kiosk
+      - kiosk_name
+      - latitude
+      - longitude
+      - reason_code
+      - reason_detail
+      - received_at
+      - record
+      - request_id
+      - site
+      - site_name
+    AttendanceCorrection:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        record:
+          type: integer
+          readOnly: true
+        record_details:
+          allOf:
+          - $ref: '#/components/schemas/AttendanceRecord'
+          readOnly: true
+        corrected_by:
+          type: integer
+          readOnly: true
+        corrected_by_email:
+          type: string
+          format: email
+          readOnly: true
+        reason:
+          type: string
+          readOnly: true
+        before_data:
+          readOnly: true
+        after_data:
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - after_data
+      - before_data
+      - corrected_by
+      - corrected_by_email
+      - created_at
+      - id
+      - reason
+      - record
+      - record_details
+    AttendanceCorrectionWrite:
+      type: object
+      properties:
+        employee:
+          type: integer
+        work_date:
+          type: string
+          format: date
+        clock_in:
+          type: string
+          format: date-time
+          nullable: true
+        clock_out:
+          type: string
+          format: date-time
+          nullable: true
+        reason:
+          type: string
+          minLength: 5
+      required:
+      - employee
+      - reason
+      - work_date
+    AttendanceRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        employee:
+          type: integer
+          readOnly: true
+        employee_number:
+          type: string
+          readOnly: true
+        employee_name:
+          type: string
+          readOnly: true
+        department_name:
+          type: string
+          readOnly: true
+        work_date:
+          type: string
+          format: date
+          readOnly: true
+        site:
+          type: integer
+          readOnly: true
+        site_name:
+          type: string
+          readOnly: true
+        shift:
+          type: integer
+          readOnly: true
+        shift_name:
+          type: string
+          readOnly: true
+        scheduled_start:
+          type: string
+          format: date-time
+          readOnly: true
+        scheduled_end:
+          type: string
+          format: date-time
+          readOnly: true
+        grace_minutes:
+          type: integer
+          readOnly: true
+        clock_in:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        clock_out:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        state:
+          allOf:
+          - $ref: '#/components/schemas/StateEnum'
+          readOnly: true
+        worked_minutes:
+          type: integer
+          readOnly: true
+          nullable: true
+        worked_hours:
+          type: number
+          format: double
+          nullable: true
+          readOnly: true
+        missing_clock_out:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - clock_in
+      - clock_out
+      - created_at
+      - department_name
+      - employee
+      - employee_name
+      - employee_number
+      - grace_minutes
+      - id
+      - missing_clock_out
+      - scheduled_end
+      - scheduled_start
+      - shift
+      - shift_name
+      - site
+      - site_name
+      - state
+      - updated_at
+      - work_date
+      - worked_hours
+      - worked_minutes
+    ChangePassword:
+      type: object
+      properties:
+        current_password:
+          type: string
+        new_password:
+          type: string
+      required:
+      - current_password
+      - new_password
+    Department:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 150
+        is_active:
+          type: boolean
+      required:
+      - id
+      - name
+    Employee:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        employee_number:
+          type: string
+          maxLength: 40
+        email:
+          type: string
+          format: email
+          readOnly: true
+        first_name:
+          type: string
+          readOnly: true
+        last_name:
+          type: string
+          readOnly: true
+        full_name:
+          type: string
+          readOnly: true
+        role:
+          type: string
+          readOnly: true
+        department:
+          type: integer
+        department_name:
+          type: string
+          readOnly: true
+        work_site:
+          type: integer
+        site_name:
+          type: string
+          readOnly: true
+        shift:
+          type: integer
+        shift_name:
+          type: string
+          readOnly: true
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - department
+      - department_name
+      - email
+      - employee_number
+      - first_name
+      - full_name
+      - id
+      - last_name
+      - role
+      - shift
+      - shift_name
+      - site_name
+      - work_site
+    EmployeeWrite:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        temporary_password:
+          type: string
+          writeOnly: true
+          minLength: 8
+        role:
+          allOf:
+          - $ref: '#/components/schemas/EmployeeWriteRoleEnum'
+          default: employee
+        employee_number:
+          type: string
+          maxLength: 40
+        department:
+          type: integer
+        work_site:
+          type: integer
+        shift:
+          type: integer
+        is_active:
+          type: boolean
+          default: true
+      required:
+      - department
+      - email
+      - employee_number
+      - first_name
+      - last_name
+      - shift
+      - work_site
+    EmployeeWriteRoleEnum:
+      enum:
+      - employee
+      - manager
+      type: string
+      description: |-
+        * `employee` - employee
+        * `manager` - manager
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+      - status
+    Holiday:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 150
+        date:
+          type: string
+          format: date
+        site:
+          type: integer
+          nullable: true
+        site_name:
+          type: string
+          readOnly: true
+      required:
+      - date
+      - id
+      - name
+      - site_name
+    KioskDevice:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 120
+        site:
+          type: integer
+        site_name:
+          type: string
+          readOnly: true
+        is_active:
+          type: boolean
+        is_paired:
+          type: boolean
+          readOnly: true
+        paired_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        last_seen_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - is_paired
+      - last_seen_at
+      - name
+      - paired_at
+      - site
+      - site_name
+    KioskPair:
+      type: object
+      properties:
+        device_id:
+          type: string
+          format: uuid
+        pairing_code:
+          type: string
+          maxLength: 12
+          minLength: 6
+      required:
+      - device_id
+      - pairing_code
+    KioskPairResponse:
+      type: object
+      properties:
+        device_id:
+          type: string
+          format: uuid
+        credential:
+          type: string
+        site:
+          $ref: '#/components/schemas/WorkSite'
+      required:
+      - credential
+      - device_id
+      - site
+    KioskQRResponse:
+      type: object
+      properties:
+        qr_token:
+          type: string
+        expires_in_seconds:
+          type: integer
+        site:
+          $ref: '#/components/schemas/KioskQRSite'
+      required:
+      - expires_in_seconds
+      - qr_token
+      - site
+    KioskQRSite:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+      required:
+      - id
+      - name
+    Login:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+      required:
+      - email
+      - password
+    LoginResponse:
+      type: object
+      properties:
+        access:
+          type: string
+        refresh:
+          type: string
+        user:
+          $ref: '#/components/schemas/UserSummary'
+      required:
+      - access
+      - refresh
+      - user
+    ManagerScope:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        manager:
+          type: integer
+        manager_email:
+          type: string
+          format: email
+          readOnly: true
+        site:
+          type: integer
+        site_name:
+          type: string
+          readOnly: true
+        department:
+          type: integer
+          nullable: true
+        department_name:
+          type: string
+          readOnly: true
+      required:
+      - department_name
+      - id
+      - manager
+      - manager_email
+      - site
+      - site_name
+    PaginatedAdminExceptionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminException'
+    PaginatedAttendanceAttemptList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttendanceAttempt'
+    PaginatedAttendanceCorrectionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttendanceCorrection'
+    PaginatedAttendanceRecordList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttendanceRecord'
+    PaginatedDepartmentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Department'
+    PaginatedEmployeeList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Employee'
+    PaginatedHolidayList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Holiday'
+    PaginatedKioskDeviceList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/KioskDevice'
+    PaginatedManagerScopeList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ManagerScope'
+    PaginatedShiftList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Shift'
+    PaginatedWorkSiteList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkSite'
+    PasswordChangedResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    PatchedDepartment:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 150
+        is_active:
+          type: boolean
+    PatchedEmployeeWrite:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        temporary_password:
+          type: string
+          writeOnly: true
+          minLength: 8
+        role:
+          allOf:
+          - $ref: '#/components/schemas/EmployeeWriteRoleEnum'
+          default: employee
+        employee_number:
+          type: string
+          maxLength: 40
+        department:
+          type: integer
+        work_site:
+          type: integer
+        shift:
+          type: integer
+        is_active:
+          type: boolean
+          default: true
+    PatchedHoliday:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 150
+        date:
+          type: string
+          format: date
+        site:
+          type: integer
+          nullable: true
+        site_name:
+          type: string
+          readOnly: true
+    PatchedKioskDevice:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 120
+        site:
+          type: integer
+        site_name:
+          type: string
+          readOnly: true
+        is_active:
+          type: boolean
+        is_paired:
+          type: boolean
+          readOnly: true
+        paired_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        last_seen_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedManagerScope:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        manager:
+          type: integer
+        manager_email:
+          type: string
+          format: email
+          readOnly: true
+        site:
+          type: integer
+        site_name:
+          type: string
+          readOnly: true
+        department:
+          type: integer
+          nullable: true
+        department_name:
+          type: string
+          readOnly: true
+    PatchedShift:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        start_time:
+          type: string
+          format: time
+        end_time:
+          type: string
+          format: time
+        grace_minutes:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        working_weekdays: {}
+        is_active:
+          type: boolean
+    PatchedWorkSite:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 150
+        address:
+          type: string
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        geofence_radius_meters:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        timezone:
+          type: string
+          maxLength: 64
+        is_active:
+          type: boolean
+    RefreshResponse:
+      type: object
+      properties:
+        access:
+          type: string
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    RefreshToken:
+      type: object
+      properties:
+        refresh:
+          type: string
+      required:
+      - refresh
+    Shift:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        start_time:
+          type: string
+          format: time
+        end_time:
+          type: string
+          format: time
+        grace_minutes:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        working_weekdays: {}
+        is_active:
+          type: boolean
+      required:
+      - end_time
+      - id
+      - name
+      - start_time
+    StateEnum:
+      enum:
+      - PRESENT
+      - LATE
+      - ABSENT
+      - EXCUSED
+      type: string
+      description: |-
+        * `PRESENT` - Present
+        * `LATE` - Late
+        * `ABSENT` - Absent
+        * `EXCUSED` - Excused
+    UserSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        role:
+          $ref: '#/components/schemas/UserSummaryRoleEnum'
+        must_change_password:
+          type: boolean
+      required:
+      - email
+      - id
+    UserSummaryRoleEnum:
+      enum:
+      - admin
+      - manager
+      - employee
+      type: string
+      description: |-
+        * `admin` - Administrator
+        * `manager` - Manager
+        * `employee` - Employee
+    WorkSite:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 150
+        address:
+          type: string
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        geofence_radius_meters:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        timezone:
+          type: string
+          maxLength: 64
+        is_active:
+          type: boolean
+      required:
+      - id
+      - latitude
+      - longitude
+      - name
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
